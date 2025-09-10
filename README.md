@@ -1,7 +1,6 @@
-#HGP-IC
-HGP-IC: Graph Neural Networks via Hotness-Based Partitioning and Information Compensation
+## HGP-IC: Graph Neural Networks via Hotness-Based Partitioning and Information Compensation
 
-##HGP-IC Model
+## HGP-IC Model
 
 <img width="1584" height="960" alt="image" src="https://github.com/user-attachments/assets/1ee92a42-6a3c-4bff-8b1a-7c465da6e989" />
 
