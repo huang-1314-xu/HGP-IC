@@ -14,34 +14,7 @@ hotness2 = {}
 s = 0
 
 
-# def estimate_hotness(graph):
-#     global hotness
-#     # 将图的权重数据移到GPU上
-#     graph.edata['weight'] = graph.edata['weight'].cuda()
-#
-#     for v in tqdm(graph.nodes()):
-#         in_edges = graph.in_edges(v, form='uv')
-#         # 在GPU上初始化 hotness_v
-#         hotness_v = torch.tensor(0.0, device='cuda')
-#         for u, v in zip(*in_edges):
-#             out_edges_u = list(graph.out_edges(u, form='uv'))
-#             sum_out_weights_u = sum(
-#                 map(lambda x: graph.edata['weight'][graph.edge_ids(u, x)].item(), out_edges_u[1])
-#             )
-#             if sum_out_weights_u > 0:
-#                 hotness_v += graph.edata['weight'][graph.edge_ids(u, v)].item() / sum_out_weights_u
-#         # 将结果移回CPU并存储在全局 hotness 字典中
-#         hotness[v.item()] = hotness_v.cpu().item()
-#     # 将图的权重数据移回CPU
-#     # graph.edata['weight'] = graph.edata['weight'].cpu()
-#     return hotness
 
-# 根据边的情况判断是否为无向图
-# def is_undirected(graph):
-#     for u, v in zip(*graph.edges()):
-#         if not graph.has_edges_between(v, u):
-#             return False  # 如果不存在反向边，则图是有向的
-#     return True  # 所有边都有反向边，图是无向的
 
 # 定义消息传递和聚合函数
 def message_func(edges):
@@ -80,21 +53,6 @@ def reduce_func(nodes, graph, pbar):
     return {'hotness': msg_sum}
 
 
-# 计算节点热度的函数
-def estimate_hotness(graph):
-    # 确保边权重已存在并在GPU上
-    graph.edata['weight'] = graph.edata['weight'].cuda()  # 将边权重移到GPU
-    # 使用 tqdm 显示进度条，显示处理了多少个节点
-    with tqdm(total=graph.number_of_nodes(), desc="Calculating Node Hotness", unit="node") as pbar:
-        # 使用消息传递机制计算热度
-        graph.update_all(message_func, lambda nodes: reduce_func(nodes, graph,pbar))
-    # 将结果移回CPU
-    hotness_values = graph.ndata['hotness'].cpu().tolist()
-    # 将每个节点的热度值存储在字典中
-    hotness = {}
-    for i, hotness_value in enumerate(hotness_values):
-        hotness[i] = hotness_value
-    return hotness
 
 
 # 第二个热度值的消息函数
