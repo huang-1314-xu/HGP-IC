@@ -1,13 +1,13 @@
-###将高热度的顶点分配到合适的分区
+
 import torch
 import dgl
 from tqdm import tqdm
 
-ps = 1  ###
-rho = 1.1  ####调整算法中与负载平衡相关的参数
+ps = 1 
+rho = 1.1  
 maxsize = 0
 minsize = 0
-lamb = 1.01  ####调整不同部分在总得分中的权重
+lamb = 1.01  
 # partdeg = {}
 hotness = {}
 hotness2 = {}
@@ -16,13 +16,13 @@ s = 0
 
 
 
-# 定义消息传递和聚合函数
+
 def message_func(edges):
     # 只发送边的权重作为消息
     msg = edges.data['weight']
     return {'msg': msg}  # 返回边的权重
 
-# 聚合函数，按照公式计算热度值
+
 def reduce_func(nodes, graph, pbar):
     # 获取消息 msg，表示边的权重
     msg = nodes.mailbox['msg']  # 获取消息（边的权重）
@@ -60,7 +60,7 @@ def message_func_2(edges):
     # 将 1 / 度数 作为消息发送
     return {'msg': 1.0 / edges.src['degree']}
 
-# 第二个热度值的归约函数
+
 def reduce_func_2(nodes):
     # 计算邻居节点度数倒数的和
     hotness_v = torch.sum(nodes.mailbox['msg'], dim=1)
@@ -133,14 +133,10 @@ def CHDRFe(hedge, part, vpp, i):  ###求的是该边在i的分区上的最终得
     return part1 + lamb * part2  ####_lamb=5
 
 
-# def init(vertexs,numberOfPartitions,stream):##初始化所有顶点的局部度，vertexs存的是所有顶点，应该是存的节点id，以id为健
-#     for vertex in vertexs:
-#         partdeg[vertex] = 0.0
 def init(vertexs, numberOfPartitions, stream):  ####对 vertexs 中的每个顶点 vertex，将其热度初始化为 0.0。
     for vertex in vertexs:
         hotness[vertex] = 0.0
-    # print("初始化")
-    # print(hotness)
+
 
 
 def chooseEdge(hedge, partitions, vpp, graph, _lamb=1.01, _eps=1, _rho=1.1):
@@ -156,15 +152,15 @@ def chooseEdge(hedge, partitions, vpp, graph, _lamb=1.01, _eps=1, _rho=1.1):
     buff = -1
     scoreBuff = -1
 
-    # updatepartdeg(hedge, graph, hotness)###先更新要分配的边上两节点的局部的度，partitions = [[]for i in k]，应该存的是边
+    # updatepartdeg(hedge, graph, hotness)
     for i, part in enumerate(partitions):
         scoreloc = CHDRFe(hedge, part, vpp, i)
         if scoreloc > scoreBuff:
             buff = i
             scoreBuff = scoreloc
-        if len(vpp[i]) > maxsize:  ##因为每次只划分一条边，所以只用加一
+        if len(vpp[i]) > maxsize:  
             maxsize += 1
-    for part in vpp:  ###vpp存的应该也是以边存的，遍历每个分区set的长度（边的个数）
+    for part in vpp:  
         minsize = min(minsize, len(part))
     return buff
-###将高热度值的边分配到合适的分区
+
