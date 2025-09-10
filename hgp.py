@@ -40,25 +40,16 @@ def output(s):
 
 def main(algo = hdrfE.chooseEdge,nbb=2):
     t0 = time.time()
-    # 检查是否有GPU
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f'Using device: {device}')
-    # 加载 Cora 数据集
-    ##dataset = dgl.data.CoraGraphDataset("/22085400417/dataset1")  ###反向边
-    # dataset = dgl.data.AsNodePredDataset(DglNodePropPredDataset("ogbn-products", root="/23085411005/hdrf_hy_pycharm/data/ogb-products"))
-    # dataset = dgl.data.CoauthorPhysicsDataset(raw_dir='/23085411005/hdrf_hy_pycharm/data/CoauthorPhysicsDataset')#dgl.data.PubmedGraphDataset
-    # dataset = dgl.data.RedditDataset(raw_dir='/23085411005/hdrf_hy_pycharm/data/RedditDataset')
+
     dataset = dgl.data.CoraGraphDataset(raw_dir='/23085411005/hdrf_hy_pycharm/data/CoraGraphDataset')
-    #dataset = dgl.data.PubmedGraphDataset(raw_dir='/22085400415/dataset/shujvji/pub')
-    ###dataset= dgl.data.YelpDataset(raw_dir='/22085400417/dataset3')##总计1: 716847自环  总计2: 13237972反向边
-    # dataset = dgl.data.AsNodePredDataset(DglNodePropPredDataset("ogbn-products", root="/23085411005/hdrf_hy_pycharm/data/ogb-products"))#反向边 少了一部分
-    # print(dataset)
-    graph = dataset[0].to(device) # 将图数据加载到GPU上
+    graph = dataset[0].to(device) 
     print("原图节点数:",graph.number_of_nodes())
-    ##节点的出度
+
     in_degrees = graph.in_degrees()
     out_degrees = graph.out_degrees()
-    # 找出入度和出度都为0的节点（即孤立节点）
     isolated_nodes = torch.where((in_degrees == 0) & (out_degrees == 0))[0]
     if isolated_nodes.numel() > 0:
         # graph.remove_nodes(torch.tensor(isolated_nodes))
@@ -83,25 +74,22 @@ def main(algo = hdrfE.chooseEdge,nbb=2):
         src_set.add(int(item))
         # print(item)
     vertexs=src_set
-    # print("测试点3")
-    ###print(src_set)
+
     #Set up
     random.seed(2)###应该是随机打乱边，保持每次接近
     # init = hdrfE.init###初始化所有顶点的热度值
     scoring = score.replicationFactor###下面直接引用了，多余了
     numberOfPartitions = nbb##设置分区数
-    #End Set up
+
     # print(1111)
     vpp = [set() for i in range(numberOfPartitions)] #Vertex per partitions   #####存的是每个分区的顶点
-    ##stream = openData(testFile)###文件地址testFile
+
     random.shuffle(stream)##打乱顺序边
     ##vertexs = vertexinset(testFile)###文件所有顶点集合
     print("Vertex got. Total of: " + str(len(vertexs)) + "vertexs")###总共多少个点
     hdrfE.init(vertexs,numberOfPartitions,stream)###初始化所有顶点的热度值
     hotness = hdrfE.estimate_hotness_2(graph)
-    # print(hotness)
 
-    # print(22222)
     res = simu.run(algo,numberOfPartitions,stream,vpp, graph)##algo是划分算法，分区数，数据流，分区节点，返回的是partitions = [[]for i in k]
     print("Simulation done, computing score:")
     rf = score.replicationFactor(res,vertexs,vpp)##复制因子
@@ -111,7 +99,7 @@ def main(algo = hdrfE.chooseEdge,nbb=2):
     print(f"time: {tt - t0:.2f}s")
     return rf
 
-# print(1)
+
 s3=main( algo=hdrfE.chooseEdge, nbb=2)###nbb分区数nvi s
 print(s3)
 
