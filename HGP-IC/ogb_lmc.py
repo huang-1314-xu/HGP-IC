@@ -27,7 +27,6 @@ weight_decay = 5e-4
 dropout = 0.5
 
 
-
 aveLOSS = []
 aveTrain_acc = []
 Val_acc = []
